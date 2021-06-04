@@ -13,10 +13,12 @@ import org.springframework.test.web.servlet.RequestBuilder;
 
 import javax.transaction.Transactional;
 
+import java.sql.Date;
+import java.util.Calendar;
+
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,9 +49,27 @@ public class LessonControllerTest {
         Lesson l = new Lesson();
         l.setTitle("Jpa");
         lessonRepository.save(l);
-        RequestBuilder rq = get(String.format("/lessons/%d",1)).contentType(MediaType.APPLICATION_JSON);
+        RequestBuilder rq = get(String.format("/lessons/%d",1)).
+                contentType(MediaType.APPLICATION_JSON);
         this.mvc.perform(rq).
                 andExpect(status().isOk()).
                 andExpect(jsonPath("$.title" , is("Jpa")));
+    }
+
+    @Test @Transactional @Rollback
+    public void testPatchUpdate() throws  Exception{
+        Lesson l = new Lesson();
+        l.setTitle("SQL");
+        l.setDeliveredOn(new Date(20210101));
+        lessonRepository.save(l);
+        System.out.println(l.getId());
+        RequestBuilder rq = patch(String.format("/lessons/%d",l.getId())).
+                contentType(MediaType.APPLICATION_JSON).
+                accept(MediaType.APPLICATION_JSON).
+                content("{\"title\" : \"Jpa_new\",\"deliveredOn\":\"2017-04-12\"}");
+
+        this.mvc.perform(rq).
+                andExpect(status().isOk()).
+                andExpect(jsonPath("$.title",is("Jpa_new")));
     }
 }
