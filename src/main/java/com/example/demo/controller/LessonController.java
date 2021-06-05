@@ -2,10 +2,11 @@ package com.example.demo.controller;
 
 import com.example.demo.domain.Lesson;
 import com.example.demo.repository.LessonRepository;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+
+import java.sql.Date;
+import java.time.LocalDate;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
@@ -44,5 +45,16 @@ public class LessonController {
         l1.setTitle(l.getTitle());
         l1.setDeliveredOn(l.getDeliveredOn());
         return this.repository.save(l1);
+    }
+
+    @RequestMapping(method = GET,value = "/find/{title}")
+    public Lesson getAllByTitle(@PathVariable String title){
+        return this.repository.findByTitle(title);
+    }
+
+    @RequestMapping(method = GET,value = "/between")
+    public Iterable<Lesson> getAllBetweenDates(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") String date1,
+                                               @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") String date2){
+            return this.repository.findBetweenDate(LocalDate.parse(date1),LocalDate.parse(date2));
     }
 }

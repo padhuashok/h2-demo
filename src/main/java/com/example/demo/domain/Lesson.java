@@ -1,13 +1,9 @@
 package com.example.demo.domain;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import java.sql.Date;
+import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 public class Lesson {
@@ -32,15 +28,15 @@ public class Lesson {
     Long id;
     String title;
 
-    public Date getDeliveredOn() {
+    public LocalDate getDeliveredOn() {
         return deliveredOn;
     }
 
-    public void setDeliveredOn(Date deliveredOn) {
+    public void setDeliveredOn(LocalDate deliveredOn) {
         this.deliveredOn = deliveredOn;
     }
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    Date deliveredOn;
+    LocalDate deliveredOn;
 
     public Lesson(){
 

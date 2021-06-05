@@ -12,9 +12,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
 import javax.transaction.Transactional;
-
-import java.sql.Date;
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.util.Arrays;
 
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -49,7 +48,7 @@ public class LessonControllerTest {
         Lesson l = new Lesson();
         l.setTitle("Jpa");
         lessonRepository.save(l);
-        RequestBuilder rq = get(String.format("/lessons/%d",1)).
+        RequestBuilder rq = get(String.format("/lessons/%d",l.getId())).
                 contentType(MediaType.APPLICATION_JSON);
         this.mvc.perform(rq).
                 andExpect(status().isOk()).
@@ -60,7 +59,7 @@ public class LessonControllerTest {
     public void testPatchUpdate() throws  Exception{
         Lesson l = new Lesson();
         l.setTitle("SQL");
-        l.setDeliveredOn(new Date(20210101));
+        l.setDeliveredOn(LocalDate.of(2021,05,21));
         lessonRepository.save(l);
         System.out.println(l.getId());
         RequestBuilder rq = patch(String.format("/lessons/%d",l.getId())).
@@ -71,5 +70,39 @@ public class LessonControllerTest {
         this.mvc.perform(rq).
                 andExpect(status().isOk()).
                 andExpect(jsonPath("$.title",is("Jpa_new")));
+    }
+
+    @Test @Transactional @Rollback
+    public void testGetLessonByTitle() throws Exception{
+        Lesson l = new Lesson();
+        l.setTitle("OOPS");
+        lessonRepository.save(l);
+        RequestBuilder rq = get(String.format("/lessons/find/%s",l.getTitle())).
+                contentType(MediaType.APPLICATION_JSON);
+        this.mvc.perform(rq).
+                andExpect(status().isOk()).
+                andExpect(jsonPath("$.title" , is("OOPS")));
+    }
+
+    @Test @Transactional @Rollback
+    public void testByDates() throws  Exception{
+        Lesson l1 = new Lesson();
+        l1.setTitle("Exceptions");
+        l1.setDeliveredOn(LocalDate.of(2021,04,21));
+
+        Lesson l2 = new Lesson();
+        l1.setTitle("Organizing");
+        l1.setDeliveredOn(LocalDate.of(2021,05,21));
+        Iterable<Lesson> lessons = Arrays.asList(l1,l2);
+
+        lessonRepository.saveAll(lessons);
+
+        RequestBuilder rq = get("/lessons/between").
+                queryParam("date1","2020-01-01").
+                queryParam("date2","2021-05-21").
+                accept(MediaType.APPLICATION_JSON_VALUE);
+        this.mvc.perform(rq).
+                andExpect(status().isOk()).
+                andExpect(jsonPath("$[0].title",is("Organizing")));
     }
 }
